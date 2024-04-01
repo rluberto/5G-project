@@ -15,5 +15,5 @@ latency_array = data['latency_array']
 xpoints = np.array(sent_time_array)
 ypoints = np.array(latency_array)
 
-plt.plot(ypoints)
+plt.plot(xpoints, ypoints)
 plt.show()
