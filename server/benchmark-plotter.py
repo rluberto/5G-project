@@ -2,7 +2,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import json
 
-data_file_path = 'benchmark-data/269607_benchmark.json'
+benchmark_file_number = 576069
+
+data_file_path = 'benchmark-data/'+str(benchmark_file_number)+'_benchmark.json'
 data = json.load(open(data_file_path))
 
 sent_time_array = data['sent_time_array']
