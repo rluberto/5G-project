@@ -7,6 +7,7 @@ import json
 
 receive_time_array = []
 sent_time_array = []
+transferred_data_length_array = []
 rta_processing_done = False
 sta_processing_done = False
 file_random_number = ''
@@ -26,11 +27,13 @@ def handle_connection(client_socket, port):
         receive_time_array.clear()
         image_chunk = client_socket.recv(2048)
         receive_time_array.append(time.time())
+        transferred_data_length_array.append(image_chunk.__len__())
         while image_chunk:
             file.write(image_chunk)
             image_chunk = client_socket.recv(2048)
             if image_chunk.__len__() != 0:
                 receive_time_array.append(time.time())
+                transferred_data_length_array.append(image_chunk.__len__())
         file.close()
         rta_processing_done = True
 
@@ -49,14 +52,18 @@ def handle_connection(client_socket, port):
     # Perform calculations based on the send time and receive time data
     if rta_processing_done and sta_processing_done: # Calculate latency after both send and received arrays are complete
         latency_array = []
+        bandwidth_array = []
         for i in range(len(receive_time_array)):
             latency = receive_time_array[i] - sent_time_array[i]
             latency_array.append(latency)
+            bandwidth_array.append(transferred_data_length_array[i] / latency)
         # Print the benchmark arrays to a json file
         benchmark_data = {
+            "transferred_data_length_array": transferred_data_length_array,
             "sent_time_array": sent_time_array,
             "receive_time_array": receive_time_array,
-            "latency_array": latency_array
+            "latency_array": latency_array,
+            "bandwidth_array": bandwidth_array
         }
         with open('benchmark-data/'+file_random_number+'_benchmark.json', 'w') as json_file:
             json.dump(benchmark_data, json_file)
