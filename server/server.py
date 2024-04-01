@@ -3,8 +3,6 @@ import threading
 import random
 import pickle
 import time
-import matplotlib.pyplot as plt
-import numpy as np
 import json
 
 receive_time_array = []
