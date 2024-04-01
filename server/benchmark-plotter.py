@@ -1,8 +1,16 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import json
 
-xpoints = np.array([1, 2, 6, 8])
-ypoints = np.array([3, 8, 1, 10])
+data_file_path = 'benchmark-data/269607_benchmark.json'
+data = json.load(open(data_file_path))
 
-plt.plot(xpoints, ypoints)
+sent_time_array = data['sent_time_array']
+receive_time_array = data['receive_time_array']
+latency_array = data['latency_array']
+
+xpoints = np.array(sent_time_array)
+ypoints = np.array(latency_array)
+
+plt.plot(ypoints)
 plt.show()
