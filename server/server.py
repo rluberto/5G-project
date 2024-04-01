@@ -34,7 +34,6 @@ def handle_connection(client_socket, port):
             if image_chunk.__len__() != 0:
                 receive_time_array.append(time.time())
         file.close()
-        print('RTA: ' + str(len(receive_time_array)))
         rta_processing_done = True
 
     # Transfer the send time data from the client to the server
@@ -47,17 +46,14 @@ def handle_connection(client_socket, port):
             if not packet: break
             data += packet
         sent_time_array = pickle.loads(data)
-        print('STA: ' + str(len(sent_time_array)))
         sta_processing_done = True
 
     # Perform calculations based on the send time and receive time data
     if rta_processing_done and sta_processing_done: # Calculate latency after both send and received arrays are complete
-        print("Latency Array: ")
         latency_array = []
         for i in range(len(receive_time_array)):
             latency = receive_time_array[i] - sent_time_array[i]
             latency_array.append(latency)
-        print(latency_array)
         # Print the benchmark arrays to a json file
         benchmark_data = {
             "sent_time_array": sent_time_array,
