@@ -17,11 +17,17 @@ bandwidth_array = data['bandwidth_array']
 xpoints = np.array(sent_time_array)
 ypoints = np.array(latency_array)
 
-plt.plot(ypoints)
+plt.xlabel('Bytes Sent (x 2048)')
+plt.ylabel('Latency (Milliseconds)')
+plt.title('Latency vs Bytes Sent')
+plt.plot(ypoints*1000)
 plt.show()
 
 xpoints = np.array(sent_time_array)
 ypoints = np.array(bandwidth_array)
 
-plt.plot(ypoints)
+plt.xlabel('Bytes Sent (x 2048)')
+plt.ylabel('Bandwidth (Bits/Second)')
+plt.title('Bandwidth vs Bytes Sent')
+plt.plot(ypoints*8)
 plt.show()
