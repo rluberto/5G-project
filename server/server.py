@@ -25,6 +25,7 @@ def handle_connection(client_socket, port):
         file_random_number = str(random.randint(100000, 999999))
         file = open('media/'+file_random_number+'_media.jpg', "wb")
         receive_time_array.clear()
+        transferred_data_length_array.clear()
         image_chunk = client_socket.recv(2048)
         receive_time_array.append(time.time())
         transferred_data_length_array.append(image_chunk.__len__())
