@@ -3,7 +3,7 @@ import numpy as np
 import json
 import sys
 
-# Change the number below to select the json file you want to plot
+# Use command line arguement to get benchmark file number
 benchmark_file_number = sys.argv[1]
 
 data_file_path = 'benchmark-data/'+str(benchmark_file_number)+'_benchmark.json'
