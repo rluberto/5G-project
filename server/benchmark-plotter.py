@@ -1,9 +1,10 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import json
+import sys
 
 # Change the number below to select the json file you want to plot
-benchmark_file_number = 908250
+benchmark_file_number = sys.argv[1]
 
 data_file_path = 'benchmark-data/'+str(benchmark_file_number)+'_benchmark.json'
 data = json.load(open(data_file_path))
