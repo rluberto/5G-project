@@ -2,9 +2,10 @@ import socket
 import time
 import pickle
 
+
 # Establish a socket connection for sending the image
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect(('127.0.0.1', 8000))
+client.connect(('localhost', 8000))
 
 # Open the image file that is going to be transferred
 file_path = 'media/image.jpg'
@@ -22,10 +23,11 @@ while image_data:
 file.close()
 client.close()
 
+time.sleep(3)
 
 # Establish a socket connection for sending benchmark data
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect(('127.0.0.1', 9000))
+client.connect(('localhost', 9000))
 
 # Send the send time array to the server
 data = pickle.dumps(send_time_array)
