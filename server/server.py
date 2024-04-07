@@ -26,12 +26,12 @@ def handle_connection(client_socket, port):
         file = open('media/'+file_random_number+'_media.jpg', "wb")
         receive_time_array.clear()
         transferred_data_length_array.clear()
-        image_chunk = client_socket.recv(2048)
+        image_chunk = client_socket.recv(2048, socket.MSG_WAITALL)
         receive_time_array.append(time.time())
         transferred_data_length_array.append(image_chunk.__len__())
         while image_chunk:
             file.write(image_chunk)
-            image_chunk = client_socket.recv(2048)
+            image_chunk = client_socket.recv(2048, socket.MSG_WAITALL)
             if image_chunk.__len__() != 0:
                 receive_time_array.append(time.time())
                 transferred_data_length_array.append(image_chunk.__len__())
