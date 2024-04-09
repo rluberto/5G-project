@@ -4,12 +4,21 @@ import random
 import pickle
 import time
 import json
+import sys
+
+# Define the server hostname or IP address
+SERVER_HOSTNAME = sys.argv[1]
+
+# Get the client file path to determine the file extension
+client_file_path = sys.argv[2]
+client_file_extension = client_file_path.split(".")[1]
 
 receive_time_array = []
 sent_time_array = []
 transferred_data_length_array = []
 rta_processing_done = False
 sta_processing_done = False
+ready_to_stop_server = False
 file_random_number = ''
 
 def handle_connection(client_socket, port):
@@ -18,12 +27,13 @@ def handle_connection(client_socket, port):
     global rta_processing_done
     global sta_processing_done
     global file_random_number
+    global ready_to_stop_server
 
     # Transfer the image from the client to the server
     if port == 8000: # Used for receiving images
         print("Received connection on port 8000")
         file_random_number = str(random.randint(100000, 999999))
-        file = open('media/'+file_random_number+'_media.jpg', "wb")
+        file = open('media/'+file_random_number+'_media.'+client_file_extension, "wb")
         receive_time_array.clear()
         transferred_data_length_array.clear()
         image_chunk = client_socket.recv(2048, socket.MSG_WAITALL)
@@ -70,17 +80,19 @@ def handle_connection(client_socket, port):
             json.dump(benchmark_data, json_file)
         rta_processing_done = False
         sta_processing_done = False
+        ready_to_stop_server = True
 
     client_socket.close()
 
 
 def start_server(port):
+
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_socket.bind(('localhost', port))
+    server_socket.bind((SERVER_HOSTNAME, port))
     server_socket.listen(5)
     print(f"Listening on port {port}...")
 
-    while True:
+    while ready_to_stop_server == False:
         client_socket, address = server_socket.accept()
         print(f"Accepted connection from {address[0]}:{address[1]} on port {port}")
         threading.Thread(target=handle_connection, args=(client_socket, port)).start()
