@@ -6,6 +6,7 @@ import time
 import json
 import sys
 import os
+import select
 
 # Define the server hostname or IP address
 SERVER_HOSTNAME = sys.argv[1]
@@ -17,6 +18,7 @@ transferred_data_length_array = []
 rta_processing_done = False
 sta_processing_done = False
 file_random_number = ''
+ready_to_stop_server = False
 
 def handle_connection(client_socket, port):
     global receive_time_array
@@ -25,6 +27,7 @@ def handle_connection(client_socket, port):
     global rta_processing_done
     global sta_processing_done
     global file_random_number
+    global ready_to_stop_server
 
     # Transfer the image from the client to the server
     if port == 8000: # Used for receiving images
@@ -71,10 +74,11 @@ def handle_connection(client_socket, port):
         latency_array = []
         bandwidth_array = []
         # Calculate the latency and bandwidth for "data chunk" that was transferred
-        for i in range(len(receive_time_array)):
-            latency = receive_time_array[i] - sent_time_array[i]
-            latency_array.append(latency)
-            bandwidth_array.append(transferred_data_length_array[i] / latency)
+        if(len(receive_time_array) == len(sent_time_array)):
+            for i in range(len(receive_time_array)):
+                latency = receive_time_array[i] - sent_time_array[i]
+                latency_array.append(latency)
+                bandwidth_array.append(transferred_data_length_array[i] / latency)
         # Collect all of the benchmark data arrays
         benchmark_data = {
             "transferred_data_length_array": transferred_data_length_array,
@@ -88,20 +92,29 @@ def handle_connection(client_socket, port):
             json.dump(benchmark_data, json_file)
         rta_processing_done = False
         sta_processing_done = False
+        ready_to_stop_server = True
     client_socket.close()
 
 
 def start_server(port):
+    global ready_to_stop_server
 
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind((SERVER_HOSTNAME, port))
     server_socket.listen(5)
+    server_socket.setblocking(0)  # Set socket to non-blocking mode
     print(f"Listening on port {port}...")
 
     while True:
-        client_socket, address = server_socket.accept()
-        print(f"Accepted connection from {address[0]}:{address[1]} on port {port}")
-        threading.Thread(target=handle_connection, args=(client_socket, port)).start()
+        ready_to_read, _, _ = select.select([server_socket], [], [], 0)
+        if ready_to_read:
+            client_socket, address = server_socket.accept()
+            print(f"Accepted connection from {address[0]}:{address[1]} on port {port}")
+            threading.Thread(target=handle_connection, args=(client_socket, port)).start()
+        elif ready_to_stop_server:
+            print("Stopping server...")
+            server_socket.close()
+            break
 
 # Start servers on multiple ports
 threading.Thread(target=start_server, args=(8000,)).start()
