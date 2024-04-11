@@ -17,7 +17,7 @@ file_metadata = []
 transferred_data_length_array = []
 rta_processing_done = False
 sta_processing_done = False
-file_random_number = ''
+file_number = ''
 ready_to_stop_server = False
 
 def handle_connection(client_socket, port):
@@ -26,14 +26,14 @@ def handle_connection(client_socket, port):
     global file_metadata
     global rta_processing_done
     global sta_processing_done
-    global file_random_number
+    global file_number
     global ready_to_stop_server
 
     # Transfer the image from the client to the server
     if port == 8000: # Used for receiving images
         print("Received connection on port 8000")
-        file_random_number = str(random.randint(100000, 999999))
-        file = open('media/'+file_random_number+'_media', "wb")
+        file_number = sys.argv[2]
+        file = open('media/'+file_number+'_media', "wb")
         receive_time_array.clear()
         transferred_data_length_array.clear()
         image_chunk = client_socket.recv(2048, socket.MSG_WAITALL)
@@ -69,7 +69,7 @@ def handle_connection(client_socket, port):
     if rta_processing_done and sta_processing_done:
         # After the image has been transferred and the image metadata is received, rename the file to include the file extension
         file_extension = file_metadata[0]
-        os.rename('media/'+file_random_number+'_media', 'media/'+file_random_number+'_media.'+file_extension)
+        os.rename('media/'+file_number+'_media', 'media/'+file_number+'_media.'+file_extension)
         #Create an empty latency and bandwidth array
         latency_array = []
         bandwidth_array = []
@@ -88,8 +88,10 @@ def handle_connection(client_socket, port):
             "bandwidth_array": bandwidth_array
         }
         # Save the benchmark data to a JSON file
-        with open('benchmark-data/'+file_random_number+'_benchmark.json', 'w') as json_file:
+        with open('benchmark-data/'+file_number+'_benchmark.json', 'w') as json_file:
             json.dump(benchmark_data, json_file)
+        print("File saved as: "+file_number+"_media."+file_extension)
+        print("Benchmark data saved as: "+file_number+"_benchmark.json")    
         rta_processing_done = False
         sta_processing_done = False
         ready_to_stop_server = True
