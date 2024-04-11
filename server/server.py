@@ -68,7 +68,7 @@ def handle_connection(client_socket, port):
     # Perform calculations based on the send time and receive time data
     if rta_processing_done and sta_processing_done:
         # After the image has been transferred and the image metadata is received, rename the file to include the file extension
-        file_extension = file_metadata[0]
+        file_extension = str(file_metadata[0])
         os.rename('media/'+file_number+'_media', 'media/'+file_number+'_media.'+file_extension)
         #Create an empty latency and bandwidth array
         latency_array = []
