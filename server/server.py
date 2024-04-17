@@ -15,8 +15,8 @@ receive_time_array = []
 sent_time_array = []
 file_metadata = []
 transferred_data_length_array = []
-rta_processing_done = False
-sta_processing_done = False
+receive_data_ready = False
+send_data_ready = False
 file_number = ''
 ready_to_stop_server = False
 
@@ -24,8 +24,8 @@ def handle_connection(client_socket, port):
     global receive_time_array
     global sent_time_array
     global file_metadata
-    global rta_processing_done
-    global sta_processing_done
+    global receive_data_ready
+    global send_data_ready
     global file_number
     global ready_to_stop_server
 
@@ -46,7 +46,7 @@ def handle_connection(client_socket, port):
                 receive_time_array.append(time.time_ns())
                 transferred_data_length_array.append(image_chunk.__len__())
         file.close()
-        rta_processing_done = True
+        receive_data_ready = True
 
     # Transfer the send time data from the client to the server
     elif port == 9000: # Used for getting benchmark data
@@ -63,10 +63,10 @@ def handle_connection(client_socket, port):
         # Unpack the send_time_array and file metedata from the pickle data
         sent_time_array = pickle_data[0]
         file_metadata = pickle_data[1]
-        sta_processing_done = True
+        send_data_ready = True
 
     # Perform calculations based on the send time and receive time data
-    if rta_processing_done and sta_processing_done:
+    if receive_data_ready and send_data_ready:
         # After the image has been transferred and the image metadata is received, rename the file to include the file extension
         file_extension = str(file_metadata[0])
         os.rename('media/'+file_number+'_media', 'media/'+file_number+'_media.'+file_extension)
@@ -92,8 +92,8 @@ def handle_connection(client_socket, port):
             json.dump(benchmark_data, json_file)
         print("File saved as: "+file_number+"_media."+file_extension)
         print("Benchmark data saved as: "+file_number+"_benchmark.json")    
-        rta_processing_done = False
-        sta_processing_done = False
+        receive_data_ready = False
+        send_data_ready = False
         ready_to_stop_server = True
     client_socket.close()
 
