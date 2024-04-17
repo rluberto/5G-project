@@ -21,7 +21,7 @@ client.connect((SERVER_HOSTNAME, 8000))
 # Write all of the image data to the server
 image_data = file.read(2048)
 while image_data:
-    send_time_array.append(time.time())
+    send_time_array.append(time.time_ns())
     client.send(image_data)
     image_data = file.read(2048)
 file.close()

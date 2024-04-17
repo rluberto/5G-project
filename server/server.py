@@ -37,13 +37,13 @@ def handle_connection(client_socket, port):
         receive_time_array.clear()
         transferred_data_length_array.clear()
         image_chunk = client_socket.recv(2048, socket.MSG_WAITALL)
-        receive_time_array.append(time.time())
+        receive_time_array.append(time.time_ns())
         transferred_data_length_array.append(image_chunk.__len__())
         while image_chunk:
             file.write(image_chunk)
             image_chunk = client_socket.recv(2048, socket.MSG_WAITALL)
             if image_chunk.__len__() != 0:
-                receive_time_array.append(time.time())
+                receive_time_array.append(time.time_ns())
                 transferred_data_length_array.append(image_chunk.__len__())
         file.close()
         rta_processing_done = True
