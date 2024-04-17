@@ -12,7 +12,7 @@ SERVER_HOSTNAME = sys.argv[1]
 
 # Initialize global variables
 receive_time_array_ns = []
-sent_time_array_ns = []
+send_time_array_ns = []
 transferred_data_length_array_bytes = []
 file_metadata = []
 file_number = ''
@@ -24,7 +24,7 @@ ready_to_stop_server = False
 def handle_connection(client_socket, port):
     # Define global variables in the handle_connection function
     global receive_time_array_ns
-    global sent_time_array_ns
+    global send_time_array_ns
     global file_metadata
     global receive_data_ready
     global send_data_ready
@@ -39,7 +39,7 @@ def handle_connection(client_socket, port):
         transferred_data_length_array_bytes.clear()
         # Create a new file to store the file transferred from the client
         file_number = sys.argv[2]
-        file = open('media/'+file_number+'_media', "wb")
+        file = open('/home/'+os.getlogin()+'/5G-project/server/media/'+file_number+'_media', "wb")
         # Receive the file from the client and write it to the new file
         # This receives the file in 2048 byte chunks
         file_chunk = client_socket.recv(2048, socket.MSG_WAITALL)
@@ -58,7 +58,7 @@ def handle_connection(client_socket, port):
     elif port == 9000: # Port 9000 is used for getting benchmark data
         print("Received connection on port 9000")
         # Ensure all global arrays are empty
-        sent_time_array_ns.clear()
+        send_time_array_ns.clear()
         file_metadata.clear()
         # Use pickle to load the data from the client
         data = b""
@@ -68,7 +68,7 @@ def handle_connection(client_socket, port):
             data += packet
         pickle_data = pickle.loads(data)
         # Unpack the send_time_array and file metedata from the pickle data
-        sent_time_array_ns = pickle_data[0]
+        send_time_array_ns = pickle_data[0]
         file_metadata = pickle_data[1]
         send_data_ready = True
 
@@ -76,7 +76,7 @@ def handle_connection(client_socket, port):
     if receive_data_ready and send_data_ready:
         # After the image has been transferred and the image metadata is received, rename the file to include the file extension
         file_extension = str(file_metadata[0])
-        os.rename('media/'+file_number+'_media', 'media/'+file_number+'_media.'+file_extension)
+        os.rename('/home/'+os.getlogin()+'/5G-project/server/media/'+file_number+'_media', '/home/'+os.getlogin()+'/5G-project/server/media/'+file_number+'_media.'+file_extension)
         # Create empty arrays for send time, receive time, adn transferred data length
         receive_time_array_ms = []
         send_time_array_ms = []
@@ -89,19 +89,19 @@ def handle_connection(client_socket, port):
         latency_array_seconds = []
         bandwidth_array_bits_per_second = []
         # Calculate the latency and bandwidth for "data chunk" that was transferred
-        if(len(receive_time_array_ns) == len(sent_time_array_ns)):
+        if(len(receive_time_array_ns) == len(send_time_array_ns)):
             # Convert units for time and transferred data length
             for i in range(len(receive_time_array_ns)):
-                send_time_array_ms.append(sent_time_array_ns[i] / 1e6)
+                send_time_array_ms.append(send_time_array_ns[i] / 1e6)
                 receive_time_array_ms.append(receive_time_array_ns[i] / 1e6)
-                send_time_array_seconds.append(sent_time_array_ns[i] / 1e9)
+                send_time_array_seconds.append(send_time_array_ns[i] / 1e9)
                 receive_time_array_seconds.append(receive_time_array_ns[i] / 1e9)
                 #Convert the transferred data length from bytes to bits
                 transferred_data_length_array_bits.append(transferred_data_length_array_bytes[i] * 8)
             # Calculate the latency and bandwidth for each "data chunk" that was transferred
             for i in range(len(receive_time_array_ns)):
                 # Calculae the latency in nanoseconds, milliseconds, and seconds
-                latency_ns = receive_time_array_ns[i] - sent_time_array_ns[i]
+                latency_ns = receive_time_array_ns[i] - send_time_array_ns[i]
                 latency_ms = receive_time_array_ms[i] - send_time_array_ms[i]
                 latency_seconds = receive_time_array_seconds[i] - send_time_array_seconds[i]
                 # Append the latency in nanoseconds, milliseconds, and seconds to the latency arrays
@@ -115,8 +115,8 @@ def handle_connection(client_socket, port):
             # Transferred data length
             "transferred_data_length_array_bytes": transferred_data_length_array_bytes,
             "transferred_data_length_array_bits": transferred_data_length_array_bits,
-            # Sent and received time
-            "sent_time_array_ns": sent_time_array_ns,
+            # Send and received time
+            "send_time_array_ns": send_time_array_ns,
             "receive_time_array_ns": receive_time_array_ns,
             "send_time_array_ms": send_time_array_ms,
             "receive_time_array_ms": receive_time_array_ms,
@@ -130,7 +130,7 @@ def handle_connection(client_socket, port):
             "bandwidth_array_bits_per_second": bandwidth_array_bits_per_second
         }
         # Save the benchmark data to a JSON file
-        with open('benchmark-data/'+file_number+'_benchmark.json', 'w') as json_file:
+        with open('/home/'+os.getlogin()+'/5G-project/server/benchmark-data/'+file_number+'_benchmark.json', 'w') as json_file:
             json.dump(benchmark_data, json_file)
         print("File saved as: "+file_number+"_media."+file_extension)
         print("Benchmark data saved as: "+file_number+"_benchmark.json")    
