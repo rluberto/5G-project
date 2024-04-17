@@ -1,6 +1,5 @@
 import socket
 import threading
-import random
 import pickle
 import time
 import json
@@ -11,16 +10,19 @@ import select
 # Define the server hostname or IP address
 SERVER_HOSTNAME = sys.argv[1]
 
+# Initialize global variables
 receive_time_array_ns = []
 sent_time_array_ns = []
-file_metadata = []
 transferred_data_length_array_bytes = []
+file_metadata = []
+file_number = ''
 receive_data_ready = False
 send_data_ready = False
-file_number = ''
 ready_to_stop_server = False
 
+# Define the function to handle a connection to the server
 def handle_connection(client_socket, port):
+    # Define global variables in the handle_connection function
     global receive_time_array_ns
     global sent_time_array_ns
     global file_metadata
@@ -30,27 +32,32 @@ def handle_connection(client_socket, port):
     global ready_to_stop_server
 
     # Transfer the image from the client to the server
-    if port == 8000: # Used for receiving images
+    if port == 8000: # Port 8000 is used for receiving images
         print("Received connection on port 8000")
-        file_number = sys.argv[2]
-        file = open('media/'+file_number+'_media', "wb")
+        # Ensure all global arrays are empty
         receive_time_array_ns.clear()
         transferred_data_length_array_bytes.clear()
-        image_chunk = client_socket.recv(2048, socket.MSG_WAITALL)
+        # Create a new file to store the file transferred from the client
+        file_number = sys.argv[2]
+        file = open('media/'+file_number+'_media', "wb")
+        # Receive the file from the client and write it to the new file
+        # This receives the file in 2048 byte chunks
+        file_chunk = client_socket.recv(2048, socket.MSG_WAITALL)
         receive_time_array_ns.append(time.time_ns())
-        transferred_data_length_array_bytes.append(image_chunk.__len__())
-        while image_chunk:
-            file.write(image_chunk)
-            image_chunk = client_socket.recv(2048, socket.MSG_WAITALL)
-            if image_chunk.__len__() != 0:
+        transferred_data_length_array_bytes.append(file_chunk.__len__())
+        while file_chunk: # Continue to receive data until the file is completely transferred
+            file.write(file_chunk)
+            file_chunk = client_socket.recv(2048, socket.MSG_WAITALL)
+            if file_chunk.__len__() != 0: # If the file chunk is not empty, append the receive time and transferred data length
                 receive_time_array_ns.append(time.time_ns())
-                transferred_data_length_array_bytes.append(image_chunk.__len__())
+                transferred_data_length_array_bytes.append(file_chunk.__len__())
         file.close()
         receive_data_ready = True
 
-    # Transfer the send time data from the client to the server
-    elif port == 9000: # Used for getting benchmark data
+    # Transfer the send time data and file metadata from the client to the server
+    elif port == 9000: # Port 9000 is used for getting benchmark data
         print("Received connection on port 9000")
+        # Ensure all global arrays are empty
         sent_time_array_ns.clear()
         file_metadata.clear()
         # Use pickle to load the data from the client
@@ -132,8 +139,9 @@ def handle_connection(client_socket, port):
         ready_to_stop_server = True
     client_socket.close()
 
-
+# Define the function to start the server
 def start_server(port):
+    # Define global variables in the start_server function
     global ready_to_stop_server
 
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -153,6 +161,6 @@ def start_server(port):
             server_socket.close()
             break
 
-# Start servers on multiple ports
+# Use threading to start servers on multiple ports
 threading.Thread(target=start_server, args=(8000,)).start()
 threading.Thread(target=start_server, args=(9000,)).start()
