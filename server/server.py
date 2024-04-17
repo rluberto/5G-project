@@ -78,56 +78,20 @@ def handle_connection(client_socket, port):
         file_extension = str(file_metadata[0])
         os.rename('/home/'+os.getlogin()+'/5G-project/server/media/'+file_number+'_media', '/home/'+os.getlogin()+'/5G-project/server/media/'+file_number+'_media.'+file_extension)
         # Create empty arrays for send time, receive time, adn transferred data length
-        receive_time_array_ms = []
-        send_time_array_ms = []
-        receive_time_array_seconds = []
-        send_time_array_seconds = []
         transferred_data_length_array_bits = []
-        # Create empty arrays for latency and bandwidth
-        latency_array_ns = []
-        latency_array_ms = []
-        latency_array_seconds = []
-        bandwidth_array_bits_per_second = []
         # Calculate the latency and bandwidth for "data chunk" that was transferred
         if(len(receive_time_array_ns) == len(send_time_array_ns)):
             # Convert units for time and transferred data length
             for i in range(len(receive_time_array_ns)):
-                send_time_array_ms.append(send_time_array_ns[i] / 1e6)
-                receive_time_array_ms.append(receive_time_array_ns[i] / 1e6)
-                send_time_array_seconds.append(send_time_array_ns[i] / 1e9)
-                receive_time_array_seconds.append(receive_time_array_ns[i] / 1e9)
                 #Convert the transferred data length from bytes to bits
                 transferred_data_length_array_bits.append(transferred_data_length_array_bytes[i] * 8)
-            # Calculate the latency and bandwidth for each "data chunk" that was transferred
-            for i in range(len(receive_time_array_ns)):
-                # Calculae the latency in nanoseconds, milliseconds, and seconds
-                latency_ns = receive_time_array_ns[i] - send_time_array_ns[i]
-                latency_ms = receive_time_array_ms[i] - send_time_array_ms[i]
-                latency_seconds = receive_time_array_seconds[i] - send_time_array_seconds[i]
-                # Append the latency in nanoseconds, milliseconds, and seconds to the latency arrays
-                latency_array_ns.append(latency_ns)
-                latency_array_ms.append(latency_ms)
-                latency_array_seconds.append(latency_seconds)
-                # Append the bandwidth in bits per second to the bandwidth array
-                bandwidth_array_bits_per_second.append(transferred_data_length_array_bits[i] / latency_seconds)
         # Collect all of the benchmark data arrays
         benchmark_data = {
             # Transferred data length
-            "transferred_data_length_array_bytes": transferred_data_length_array_bytes,
             "transferred_data_length_array_bits": transferred_data_length_array_bits,
-            # Send and received time
+            # Send and received time in nanoseconds
             "send_time_array_ns": send_time_array_ns,
-            "receive_time_array_ns": receive_time_array_ns,
-            "send_time_array_ms": send_time_array_ms,
-            "receive_time_array_ms": receive_time_array_ms,
-            "send_time_array_seconds": send_time_array_seconds,
-            "receive_time_array_seconds": receive_time_array_seconds,
-            # Latency
-            "latency_array_ns": latency_array_ns,
-            "latency_array_ms": latency_array_ms,
-            "latency_array_seconds": latency_array_seconds,
-            # Bandwidth
-            "bandwidth_array_bits_per_second": bandwidth_array_bits_per_second
+            "receive_time_array_ns": receive_time_array_ns
         }
         # Save the benchmark data to a JSON file
         with open('/home/'+os.getlogin()+'/5G-project/server/benchmark-data/'+file_number+'_benchmark.json', 'w') as json_file:
